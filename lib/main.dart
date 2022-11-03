@@ -24,23 +24,14 @@ class Layout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('레이아웃 연습!!'),
-        ),
-        body: ListView(
-          // 이미지 섹션
-          children: [
-            Image.network(
+    Widget imgSection = Image.network(
               'https://cdn.pixabay.com/photo/2022/04/29/14/28/woman-7163866_960_720.jpg',
               width: 600,
               height: 240,
               fit: BoxFit.cover,
               // 이미지 꽉 채우는!
-            ),
-
-            // 타이틀섹션
-            Container(
+            );
+    Widget titleSection = Container(
               padding: EdgeInsets.all(32),
               child: Row(
                 children: [
@@ -68,10 +59,8 @@ class Layout extends StatelessWidget {
                   Text('41'),
                 ],
               ),
-            ),
-
-            // 버튼섹션
-            Row(
+            );
+    Widget btnSection = Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Column(
@@ -111,10 +100,8 @@ class Layout extends StatelessWidget {
                   ],
                 ),
               ],
-            ),
-
-            // Text Section
-            Container(
+            );
+    Widget txtSection = Container(
               padding: EdgeInsets.all(32),
               child: Text(
                 'Lake Oeschinen lies at the foot of the Blüemlisalp in the Bernese '
@@ -125,7 +112,22 @@ class Layout extends StatelessWidget {
                 'enjoyed here include rowing, and riding the summer toboggan run.',
                 softWrap: true,
               ),
-            )
+            );
+
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('레이아웃 연습!!'),
+        ),
+        body: ListView( 
+          children: [
+            // 이미지 섹션
+            imgSection,
+            // 타이틀섹션
+            titleSection,
+            // 버튼섹션
+            btnSection,
+            // Text Section
+            txtSection,
           ],
         ));
   }
