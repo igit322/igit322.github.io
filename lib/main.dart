@@ -138,7 +138,7 @@ class _LayoutState extends State<Layout> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text('레이아웃 연습!!'),
+          title: Text('Layout!!'),
         ),
         body: ListView(
           children: [
