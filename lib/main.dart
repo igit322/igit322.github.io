@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -11,146 +12,149 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blueGrey,
-        ),
-        home: Layout());
+      title: 'StopWatch',
+      theme: ThemeData(
+        primarySwatch: Colors.red,
+      ),
+      home: HomePage(),
+    );
   }
 }
 
-class Layout extends StatefulWidget {
-  const Layout({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<Layout> createState() => _LayoutState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _LayoutState extends State<Layout> {
-  bool star = true;
-  int count = 101;
+// 스톱워치 기능구현
+class _HomePageState extends State<HomePage> {
+  List<String> lapTimes = []; //랩 타임을 기록할 변수
+  Stopwatch watch = Stopwatch(); // 지속적으로 시간이 지나가는 변수
+  String elapsedTime = "00:00:00:000"; // 경과 시간을 기록하는 변수
 
   @override
   Widget build(BuildContext context) {
-    Widget imgSection = Image.network(
-      'https://cdn.pixabay.com/photo/2022/04/29/14/28/woman-7163866_960_720.jpg',
-      width: 600,
-      height: 240,
-      fit: BoxFit.cover,
-      // 이미지 꽉 채우는!
-    );
-    Widget titleSection = Container(
-      padding: EdgeInsets.all(32),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Oeschinen Lake Campground',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Kandersteg, Switzerland',
-                  style: TextStyle(color: Colors.grey[500]),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: star
-                ? Icon(Icons.star) //콜론없음
-                : Icon(Icons.star_border),
-            color: Colors.purple,
-            // 별
-            onPressed: () {
-              setState(() {
-                if (star) {
-                  star = !star;
-                  count = count - 1;
-                } else {
-                  star = !star;
-                  count = count + 1;
-                }
-              });
-            },
-          ),
-          Text('$count'),
-        ],
-      ),
-    );
-    Widget btnSection = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Column(
-          children: [
-            Icon(
-              Icons.call,
-              color: Colors.blue,
-            ),
-            Text(
-              'CALL',
-              style: TextStyle(color: Colors.blue),
-            )
-          ],
-        ),
-        Column(
-          children: [
-            Icon(
-              Icons.near_me,
-              color: Colors.blue,
-            ),
-            Text(
-              'ROUTE',
-              style: TextStyle(color: Colors.blue),
-            )
-          ],
-        ),
-        Column(
-          children: [
-            Icon(
-              Icons.share,
-              color: Colors.blue,
-            ),
-            Text(
-              'SHARE',
-              style: TextStyle(color: Colors.blue),
-            )
-          ],
-        ),
-      ],
-    );
-    Widget txtSection = Container(
-      padding: EdgeInsets.all(32),
-      child: Text(
-        'Lake Oeschinen lies at the foot of the Blüemlisalp in the Bernese '
-            'Alps. Situated 1,578 meters above sea level, it is one of the '
-            'larger Alpine Lakes. A gondola ride from Kandersteg, followed by a '
-            'half-hour walk through pastures and pine forest, leads you to the '
-            'lake, which warms to 20 degrees Celsius in the summer. Activities '
-            'enjoyed here include rowing, and riding the summer toboggan run.',
-        softWrap: true,
-      ),
-    );
-
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Layout!!'),
-        ),
-        body: ListView(
+      appBar: AppBar(
+        title: Text('StopWatch'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
           children: [
-            // 이미지 섹션
-            imgSection,
-            // 타이틀섹션
-            titleSection,
-            // 버튼섹션
-            btnSection,
-            // Text Section
-            txtSection,
+            Container(
+              child: Text(
+                elapsedTime,
+                style: TextStyle(fontSize: 25),
+              ),
+              padding: EdgeInsets.all(20),
+            ),
+            Container(
+              width: 100,
+              height: 200,
+              child: ListView(
+                children: lapTimes.map((time) => Text(time)).toList(),
+                // [
+                //   Text('Lab3'),
+                //   Text('01:00:00:0000'),
+                //   Text('Lab2'),
+                //   Text('01:00:00:0000'),
+                //   Text('Lab1'),
+                //   Text('01:00:00:0000'),
+                // ],
+              ),
+            ),
+            Container(
+              // 플로팅 액션 버튼
+              width: 200,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FloatingActionButton(
+                    child: !watch.isRunning
+                        ? Icon(Icons.play_arrow)
+                        : Icon(Icons.stop),
+                    onPressed: () {
+                      if (!watch.isRunning) {
+                        startWatch();
+                      } else {
+                        stopWatch();
+                      }
+                    }, // 추가로 써줘야 인식됨
+                  ),
+                  FloatingActionButton(
+                    child: !watch.isRunning ? Text('Reset') : Text('Lab'),
+                    onPressed: () {
+                      if (!watch.isRunning) {
+                        resetWatch();
+                      } else {
+                        recordLapTime(elapsedTime);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            )
           ],
-        ));
+        ),
+      ),
+    );
+  }
+
+  transTime(int milliseconds) {
+    int seconds = (milliseconds / 1000).truncate();
+    int minutes = (seconds / 60).truncate();
+    int hours = (minutes / 60).truncate();
+
+    // truncate 소수점 제거
+    // 15001 / 1000 = 15
+
+    // 61 % 60 = 1 // toString 문자열 변경
+    // padLeft 두자리수만 출력! 아닐때 '0'으로 표기
+
+    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
+    String minuteStr = (minutes % 60).toString().padLeft(2, '0');
+    String hoursStr = (hours % 60).toString().padLeft(2, '0');
+
+    return "$hoursStr:$minuteStr:$secondsStr:$milliseconds";
+  }
+
+  updatetime(Timer timer) {
+    if (watch.isRunning) {
+      setState(() {
+        elapsedTime = transTime(watch.elapsedMilliseconds);
+      });
+    }
+  }
+
+  startWatch() {
+    watch.start();
+    Timer.periodic(Duration(milliseconds: 100), updatetime);
+  }
+
+  stopWatch() {
+    setState(() {
+      watch.stop();
+    });
+  }
+
+  resetWatch() {
+    setState(() {
+      watch.reset();
+      lapTimes.clear();
+    });
+  }
+
+  setTime() {
+    var timeFar = watch.elapsedMilliseconds;
+    setState(() {
+      elapsedTime = transTime(timeFar);
+    });
+  }
+
+  recordLapTime(String time) {
+    lapTimes.insert(0, 'Lap ${lapTimes.length + 1} $time');
   }
 }
